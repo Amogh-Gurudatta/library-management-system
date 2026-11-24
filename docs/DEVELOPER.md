@@ -1,6 +1,6 @@
 # Developer Guide
 
-Technical reference for developers and AI agents working on this codebase. For the reasoning behind decisions, see [DESIGN.md](../DESIGN.md). For the authoritative behaviour spec, see [capstone_problem_statement.pdf](../capstone_problem_statement.pdf). Input validation (section "Output contract") is an addition required by the TAs.
+Technical reference for developers and AI agents working on this codebase. For the reasoning behind decisions, see [DESIGN.md](DESIGN.md). For the authoritative behaviour spec, see [capstone_problem_statement.pdf](capstone_problem_statement.pdf). Input validation (section "Output contract") is an addition required by the TAs.
 
 ## Build and test
 
@@ -94,7 +94,7 @@ stdin ──► CommandProcessor.run()  ──► execute(line) ──► Librar
 2. Put any rule in a new `Library` method that throws a `LibraryException` subclass. Keep formatting in `CommandProcessor`.
 3. If it's a report, build a `List<String>` and return it through `orNone(lines)`.
 4. Add `tests/<name>.in` and `tests/<name>.expected`, with the expected output derived by hand, and run `./run_tests.sh`.
-5. Update `README.md`, this file, `DESIGN.md`, and `class_diagram.mmd`.
+5. Update `README.md`, this file, `docs/DESIGN.md`, and `docs/diagram/class_diagram.mmd` (then re-export the PDF; see DESIGN.md step 5).
 
 ### Add an item type
 1. Create `class X extends LibraryItem`. Add `implements Borrowable` with `getFinePerDay()` if it can be lent. Implement `getTypeName()`.

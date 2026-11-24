@@ -116,14 +116,17 @@ The program prints `ERROR` followed by a reason, then carries on with the next c
 src/                 The Java source code (one class per file)
 tests/               Test inputs (.in) and the exact output expected (.expected)
 run_tests.sh         Compiles everything and checks every test
-class_diagram.pdf    Picture of how the classes fit together
-DESIGN.md            Why the code is built the way it is
-docs/DEVELOPER.md    Technical guide for anyone changing the code
+docs/                Documentation, the project brief and the class diagram
+  DESIGN.md          Why the code is built the way it is
+  DEVELOPER.md       Technical guide for anyone changing the code
+  diagram/           Class diagram (PDF + Mermaid source)
+  milestones/        Submitted milestone files
 AGENTS.md            Short brief for AI coding assistants
 ```
 
 ## Learn more
 
-- **[class_diagram.pdf](class_diagram.pdf):** the class diagram (source in `class_diagram.mmd`).
-- **[DESIGN.md](DESIGN.md):** every design decision explained, step by step.
-- **[docs/DEVELOPER.md](docs/DEVELOPER.md):** architecture, invariants, and how to add a new command or type.
+- **[Project brief](docs/capstone_problem_statement.pdf):** the original problem statement.
+- **[Class diagram](docs/diagram/class_diagram.pdf):** how the classes fit together (source in `docs/diagram/class_diagram.mmd`).
+- **[DESIGN.md](docs/DESIGN.md):** every design decision explained, step by step.
+- **[DEVELOPER.md](docs/DEVELOPER.md):** architecture, invariants, and how to add a new command or type.

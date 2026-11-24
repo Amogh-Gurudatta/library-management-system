@@ -49,7 +49,8 @@ The rest of this file is a step-by-step log of decisions, in build order.
 
 ## Step 5: Design
 
-- The class diagram is in `class_diagram.mmd` (source) and `class_diagram.pdf` (export).
+- The class diagram is in `docs/diagram/class_diagram.mmd` (source) and `docs/diagram/class_diagram.pdf` (export). To re-export it after editing, run this from the project root:
+  `npx -y @mermaid-js/mermaid-cli -i docs/diagram/class_diagram.mmd -o docs/diagram/class_diagram.pdf -c docs/diagram/mermaid-config.json --size 2200`
 - **Two hierarchies.** Items (`LibraryItem` → `Book`, `Magazine`, `ReferenceBook`) and members (`Member` → `Student`, `Staff`, `Faculty`).
 - **One interface.** Only `Book` and `Magazine` can be borrowed, so only they implement `Borrowable`. "Can this be borrowed?" becomes a type question (`item instanceof Borrowable`), not a flag.
 - **One coordinator.** `Library` holds the catalogue, the members, the active loans and today's day. Every rule is checked there.
