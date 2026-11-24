@@ -1,0 +1,28 @@
+ERROR unknown command FOO
+ERROR unknown command borrow
+ERROR missing command
+ERROR ADD_BOOK expects 3 fields: id|title|author
+ERROR ADD_BOOK expects 3 fields: id|title|author
+ERROR title cannot be empty
+ERROR id cannot be empty
+OK
+ERROR duplicate id B1
+ERROR unknown member type ADMIN
+ERROR unknown member type student
+OK
+ERROR duplicate id S1
+ERROR days must be a non-negative number
+ERROR days must be a non-negative number
+ERROR days must be a non-negative number
+ERROR days must be a non-negative number
+ERROR days cannot be empty
+OK today is day 0
+ERROR RETURN expects 1 field: itemId
+ERROR RETURN expects 1 field: itemId
+ERROR INVENTORY expects no fields
+ERROR OVERDUE expects no fields
+ERROR BORROW expects 2 fields: memberId|itemId
+ERROR text cannot be empty
+ERROR memberId cannot be empty
+OK due on day 14
+B1|BOOK|ON_LOAN|S1

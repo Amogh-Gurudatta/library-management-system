@@ -146,3 +146,24 @@ Decisions behind the table:
 - **OVERDUE computes the fine "so far"** with `loan.fine(today)`. It reuses the method RETURN uses, so the two can never disagree.
 - **`LOANS` for an unknown member** throws `MemberNotFoundException` (from `findMember`). A known member with no loans prints `NONE`.
 - **`tests/sample.in` and `tests/sample.expected`** were copied from section 9 of the brief. `java -cp out Main < tests/sample.in | diff - tests/sample.expected` prints nothing, so the output matches exactly.
+
+## Step 13: Tests and CI
+
+- **Each test is a pair**, `tests/<name>.in` and `tests/<name>.expected`. `./run_tests.sh`:
+  - compiles everything (warnings count as errors);
+  - runs each `.in` through `java -cp out Main`;
+  - diffs the output against the matching `.expected`;
+  - exits non-zero if anything differs.
+- **The expected outputs were worked out by hand from the rules**, not copied from the program's output. A test that only repeats what the program already prints can't catch a bug. Writing them this way caught a mistake in one expected file (a day-0 student loan is due on day 14, not day 0).
+
+| Test | What it proves |
+|---|---|
+| `sample` | The brief's section 9 session, character for character |
+| `errors` | Every section 7 error message, at least once |
+| `limits` | Student, staff and faculty each hit their own limit (3, 4, 5), with loan periods 14, 21, 30. Returning an item frees a slot. |
+| `fines` | Return on the due day means fine 0; fines for books (₹2) and magazines (₹1); OVERDUE "fine so far"; `NONE` for empty reports; case-insensitive search |
+| `sorting` | Every tie-break: LOANS same due day → item ID; OVERDUE same days late → item ID; SEARCH same title → ID; string ID order (`B10` before `B2`) |
+| `invalid_input` | Every validation message from step 11. Bad lines change nothing, so the final INVENTORY shows only the valid commands' effect. |
+
+- **CI.** `.github/workflows/ci.yml` runs `./run_tests.sh` on GitHub Actions (Java 17) for every push and pull request. A red badge on the README means some commit broke a test.
+- **Java 17 compatibility.** The code compiles with `--release 17`, so it runs on any JDK from 17 upwards. Lab machines may have an older JDK than the one this was developed on.
