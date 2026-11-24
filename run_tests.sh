@@ -5,7 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 rm -rf out
-javac --release 17 -Xlint:all,-serial -Werror -d out src/*.java
+javac --release 21 -Xlint:all,-serial -Werror -d out src/*.java
 
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT

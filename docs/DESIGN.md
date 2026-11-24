@@ -210,8 +210,8 @@ Decisions behind the table:
 | `sorting` | Every tie-break: LOANS same due day → item ID; OVERDUE same days late → item ID; SEARCH same title → ID; string ID order (`B10` before `B2`) |
 | `invalid_input` | Every validation message from step 11. Bad lines change nothing, so the final INVENTORY shows only the valid commands' effect. |
 
-- **CI.** `.github/workflows/ci.yml` runs `./run_tests.sh` on GitHub Actions (Java 17) for every push and pull request. A red badge on the README means some commit broke a test.
-- **Java 17 compatibility.** The code compiles with `--release 17`, so it runs on any JDK from 17 upwards. Lab machines may have an older JDK than the one this was developed on.
+- **CI.** `.github/workflows/ci.yml` runs `./run_tests.sh` on GitHub Actions (Java 21) for every push and pull request. A red badge on the README means some commit broke a test.
+- **Java 21.** The code compiles with `--release 21`, the version used in the course, so it runs on any JDK from 21 upwards. (It was first targeted at Java 17 and moved to 21 later; nothing in the code had to change, because every feature it uses already existed in 17.)
 
 ## Step 14: Reservations (bonus)
 

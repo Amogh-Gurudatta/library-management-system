@@ -1,7 +1,7 @@
 # Library Management System
 
 [![CI](https://github.com/Amogh-Gurudatta/library-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Amogh-Gurudatta/library-management-system/actions/workflows/ci.yml)
-![Java 17+](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)
+![Java 21](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
 ![Interface: CLI](https://img.shields.io/badge/interface-command--line-4c1)
 [![Docs](https://img.shields.io/badge/docs-design%20%7C%20developer-blue)](docs/DESIGN.md)
@@ -14,7 +14,7 @@ You type commands (or feed it a file of them), and it answers each one on its ow
 
 ## Quick start
 
-You need **Java 17 or newer**. Check with `java -version`.
+You need **Java 21 or newer**. Check with `java -version`.
 
 ```bash
 # 1. Compile

@@ -1,9 +1,9 @@
 # Agent Notes
 
-Java 17 command-line library management system (college capstone). Default package, no dependencies.
+Java 21 command-line library management system (college capstone). Default package, no dependencies.
 
 - **Build and test:** `./run_tests.sh`. It must print `0 failed` before you commit.
-- **Run:** `javac --release 17 -d out src/*.java && java -cp out Main < tests/sample.in`
+- **Run:** `javac --release 21 -d out src/*.java && java -cp out Main < tests/sample.in`
 
 Hard rules:
 - Output must match the spec character for character (`docs/capstone_problem_statement.pdf`, plus the validation rules in `docs/DEVELOPER.md`).
