@@ -3,6 +3,50 @@
 A guide to *why* the code is shaped the way it is.
 Each section names the class that owns a rule, so you can find it quickly.
 
+## At a glance
+
+```text
+Main ──► CommandProcessor ──► Library ──► LibraryItem / Member / Loan
+        (text in/out,         (all rules,
+         validation,           all state,
+         the one catch)        throws exceptions)
+```
+
+### Where each rule lives
+
+| Rule (from the brief) | Class.method |
+|---|---|
+| Book fine ₹2/day, magazine ₹1/day | `Book.getFinePerDay()`, `Magazine.getFinePerDay()` |
+| Reference books can't be borrowed | `ReferenceBook` does **not** implement `Borrowable`; checked in `Library.borrow` |
+| Student 3/14, Staff 4/21, Faculty 5/30 | `Student` / `Staff` / `Faculty`: `getMaxItems()`, `getLoanPeriod()` |
+| Due day = borrow day + loan period | `Loan` constructor |
+| Fine = days late × rate, none if on time | `Loan.daysLate()`, `Loan.fine()` |
+| One member per item | `Library.loans` map keyed by item ID; checked in `Library.borrow` |
+| Member limit | `Library.borrow` (`countLoans` vs `getMaxItems()`) |
+| Reservation rules and auto-issue | `Library.reserve`, `Library.issueToNextInQueue` |
+| Unique IDs | `Library.addItem`, `Library.addMember` |
+| Well-formed input | `CommandProcessor.fields`, `parseDays`, `createMember` |
+| Errors caught in one place | `CommandProcessor.run` |
+
+### Making common changes
+
+| If you want to… | Change |
+|---|---|
+| Change a borrowing limit or loan period | That member class's `getMaxItems()` / `getLoanPeriod()` (one line) |
+| Change a fine rate | That item class's `getFinePerDay()` (one line) |
+| Make reference books borrowable | `ReferenceBook implements Borrowable` + add `getFinePerDay()` |
+| Add a member type (e.g. `GUEST`) | New `class Guest extends Member` + one `case "GUEST":` in `CommandProcessor.createMember` |
+| Add an item type (e.g. `DVD`) | New `class Dvd extends LibraryItem implements Borrowable` + an `ADD_DVD` case in `CommandProcessor.execute` |
+| Add a command | New `case` in `CommandProcessor.execute` using `fields(...)`; rule logic in a new `Library` method; report lines via `orNone(...)` |
+| Change a sort order | The `Comparator` in the matching `Library` method (`search`, `loansOf`, `overdueLoans`, `inventory`) |
+| Cap fines (e.g. max ₹50) | `Loan.fine()`: `Math.min(50, ...)` |
+| Change an error message | That exception's constructor or static factory |
+| Change the check order | Reorder the `if` blocks in `Library.borrow` / `Library.reserve` |
+
+After any change: `./run_tests.sh`, then update the affected `.expected` files.
+
+The rest of this file is a step-by-step log of decisions, in build order.
+
 ## Step 5: Design
 
 - The class diagram is in `class_diagram.mmd` (source) and `class_diagram.pdf` (export).
