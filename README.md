@@ -1,6 +1,10 @@
 # Library Management System
 
 [![CI](https://github.com/Amogh-Gurudatta/library-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/Amogh-Gurudatta/library-management-system/actions/workflows/ci.yml)
+![Java 17+](https://img.shields.io/badge/Java-17%2B-ED8B00?logo=openjdk&logoColor=white)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-brightgreen)
+![Interface: CLI](https://img.shields.io/badge/interface-command--line-4c1)
+[![Docs](https://img.shields.io/badge/docs-design%20%7C%20developer-blue)](docs/DESIGN.md)
 
 A small command-line program that runs a college library: it keeps track of books, magazines and reference books, the people who borrow them, who has what, when it is due back, and how much they owe if it comes back late.
 
