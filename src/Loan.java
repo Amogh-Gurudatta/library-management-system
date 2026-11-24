@@ -34,4 +34,14 @@ public class Loan {
     public int getFinePerDay() {
         return finePerDay;
     }
+
+    /** Days past the due day as of {@code today}; 0 if not yet late. */
+    public int daysLate(int today) {
+        return Math.max(0, today - dueDay);
+    }
+
+    /** Fine owed as of {@code today}: days late times the item's fine rate. */
+    public int fine(int today) {
+        return daysLate(today) * finePerDay;
+    }
 }

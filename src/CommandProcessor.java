@@ -52,8 +52,9 @@ public class CommandProcessor {
                 return List.of("OK due on day " + loan.getDueDay());
             }
             case "RETURN":
-                library.returnItem(f[1]);
-                return List.of("OK");
+                return List.of("OK fine " + library.returnItem(f[1]));
+            case "ADVANCE":
+                return List.of("OK today is day " + library.advance(Integer.parseInt(f[1])));
             case "INVENTORY":
                 return inventory();
             default:

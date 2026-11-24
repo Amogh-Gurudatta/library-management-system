@@ -63,14 +63,20 @@ public class Library {
         return loan;
     }
 
-    /** Takes an item back and returns the loan that just ended. */
-    public Loan returnItem(String itemId) throws LibraryException {
+    /** Takes an item back and returns the fine owed (0 if on time). */
+    public int returnItem(String itemId) throws LibraryException {
         findItem(itemId);
         Loan loan = loans.remove(itemId);
         if (loan == null) {
             throw new ItemNotOnLoanException(itemId);
         }
-        return loan;
+        return loan.fine(today);
+    }
+
+    /** Moves simulated time forward and returns the new day. */
+    public int advance(int days) {
+        today += days;
+        return today;
     }
 
     /** How many items a member currently holds, counted from the active loans. */

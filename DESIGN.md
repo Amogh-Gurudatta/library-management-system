@@ -86,3 +86,15 @@ Each section names the class that owns a rule, so you can find it quickly.
 - **Members are compared with `==` in `countLoans`.** Each member exists exactly once in the library, so comparing object identity is correct and cheap.
 - **RETURN still calls `findItem` first**, so an unknown ID reports "item X not found" rather than "X is not on loan".
 - `loans.remove(itemId)` both ends the loan and tells us whether there was one: it returns `null` if the item wasn't on loan.
+
+## Step 10: ADVANCE, due days, fines
+
+- **Time is just an `int`** (`Library.today`, starting at 0). Only `Library.advance` changes it. The program never reads the system clock, so every run of the same input gives the same output.
+- **The fine maths lives in `Loan`**, because a loan has all the facts it needs: due day and fine rate.
+  - `daysLate(today) = max(0, today - dueDay)`. The `max` gives "no fine if returned on or before the due day".
+  - `fine(today) = daysLate(today) × finePerDay`.
+  - Both take `today` as a parameter instead of storing it, so the same loan can answer for any day. RETURN uses this, and so does OVERDUE ("fine owed so far").
+- **Checked by hand:**
+  - Returned on day 14, due on day 14 → `OK fine 0`.
+  - Magazine returned on day 20, due on day 14 → 6 days × ₹1 → `OK fine 6`.
+- `Library.returnItem` now returns the fine (`int`). It doesn't return the `Loan`, because the caller only needs the amount.
