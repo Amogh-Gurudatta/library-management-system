@@ -167,3 +167,26 @@ Decisions behind the table:
 
 - **CI.** `.github/workflows/ci.yml` runs `./run_tests.sh` on GitHub Actions (Java 17) for every push and pull request. A red badge on the README means some commit broke a test.
 - **Java 17 compatibility.** The code compiles with `--release 17`, so it runs on any JDK from 17 upwards. Lab machines may have an older JDK than the one this was developed on.
+
+## Step 14: Reservations (bonus)
+
+- **Storage.** `Library.reservations` is a `Map<String, List<Member>>`, keyed by item ID and kept in the order members reserved.
+  - It's a `List`, not a `Queue`, because the rules can skip a member in the middle (someone at their limit) and still keep them waiting. A plain queue only lets you take from the front.
+  - An empty list is removed from the map, so the map only holds items somebody is actually waiting for.
+- **RESERVE check order:**
+  1. member exists
+  2. item exists
+  3. item is borrowable (`cannot be borrowed`, the same error as BORROW, as section 8 requires)
+  4. item is on loan (otherwise `<id> is available`)
+  5. the member isn't the current holder (`already has`)
+  6. the member isn't already queued (`already reserved`)
+- **RETURN returns a `ReturnResult`**, not just the fine. A return can now also start a new loan, and the command needs both facts to print `OK fine 12, issued to T1 due on day 41`. A small result object is clearer than returning two values some other way, such as an array or extra getters on `Library`.
+- **Auto-issue** (`issueToNextInQueue`):
+  - It walks the queue in order and lends the item to the first member with `countLoans(member) < member.getMaxItems()`.
+  - Members who are skipped stay in place.
+  - The new loan starts *today*, so its due day is `today + loanPeriod`.
+  - If nobody qualifies, the item becomes AVAILABLE and the queue is kept for the next return.
+- **One lending path.** `lend(...)` is shared by BORROW and auto-issue, so a loan is always created and recorded the same way.
+- **The brief leaves one case open:** a skipped member could later BORROW the item directly while still in its queue. Without handling, the item would be auto-issued straight back to them when they return it. **Decision: borrowing an item cancels your own reservation for it** (`cancelReservation` in `borrow`). `tests/reservations_skip` covers this.
+- **Changing the queue while looping over it.** `issueToNextInQueue` removes from the list inside a for-each loop and returns immediately afterwards. Continuing the loop after a removal would throw `ConcurrentModificationException`.
+- **The class diagram was updated** to match the final code: `ReturnResult`, the reservations field, `reserve()`, the private helpers, and the real `CommandProcessor` method names.

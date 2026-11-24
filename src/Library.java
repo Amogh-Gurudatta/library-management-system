@@ -10,6 +10,8 @@ public class Library {
     private final Map<String, Member> members = new HashMap<>();
     /** Active loans keyed by item ID: an item can be on loan to at most one member. */
     private final Map<String, Loan> loans = new HashMap<>();
+    /** Reservation queues keyed by item ID, in the order members reserved. */
+    private final Map<String, List<Member>> reservations = new HashMap<>();
     private int today = 0;
 
     public int getToday() {
@@ -66,19 +68,78 @@ public class Library {
         if (countLoans(member) >= member.getMaxItems()) {
             throw new BorrowLimitExceededException(memberId, member.getMaxItems());
         }
-        Loan loan = new Loan(item, borrowable, member, today);
-        loans.put(itemId, loan);
-        return loan;
+        cancelReservation(member, itemId);
+        return lend(item, borrowable, member);
     }
 
-    /** Takes an item back and returns the fine owed (0 if on time). */
-    public int returnItem(String itemId) throws LibraryException {
-        findItem(itemId);
+    /**
+     * Takes an item back and computes the fine. If members reserved it, the item goes straight to the
+     * first one in the queue who is below their limit; members at their limit are skipped and keep their place.
+     */
+    public ReturnResult returnItem(String itemId) throws LibraryException {
+        LibraryItem item = findItem(itemId);
         Loan loan = loans.remove(itemId);
         if (loan == null) {
             throw new ItemNotOnLoanException(itemId);
         }
-        return loan.fine(today);
+        return new ReturnResult(loan.fine(today), issueToNextInQueue(item));
+    }
+
+    /**
+     * Adds a member to an item's reservation queue. Checks, in order: member exists, item exists,
+     * item is borrowable, item is on loan, member does not hold it, member has not already reserved it.
+     */
+    public void reserve(String memberId, String itemId) throws LibraryException {
+        Member member = findMember(memberId);
+        LibraryItem item = findItem(itemId);
+        if (!(item instanceof Borrowable)) {
+            throw ItemNotAvailableException.notBorrowable(itemId);
+        }
+        Loan loan = loans.get(itemId);
+        if (loan == null) {
+            throw ReservationNotAllowedException.available(itemId);
+        }
+        if (loan.getMember() == member) {
+            throw ReservationNotAllowedException.alreadyHolds(memberId, itemId);
+        }
+        List<Member> queue = reservations.computeIfAbsent(itemId, id -> new ArrayList<>());
+        if (queue.contains(member)) {
+            throw ReservationNotAllowedException.alreadyReserved(memberId, itemId);
+        }
+        queue.add(member);
+    }
+
+    /** Creates and records a loan starting today. Used by BORROW and by the reservation queue. */
+    private Loan lend(LibraryItem item, Borrowable borrowable, Member member) {
+        Loan loan = new Loan(item, borrowable, member, today);
+        loans.put(item.getId(), loan);
+        return loan;
+    }
+
+    /** Drops a member from an item's queue, e.g. once they borrow it directly. */
+    private void cancelReservation(Member member, String itemId) {
+        List<Member> queue = reservations.get(itemId);
+        if (queue != null) {
+            queue.remove(member);
+            if (queue.isEmpty()) {
+                reservations.remove(itemId);
+            }
+        }
+    }
+
+    /** Lends a just-returned item to the first queued member below their limit. Returns null if nobody qualifies. */
+    private Loan issueToNextInQueue(LibraryItem item) {
+        List<Member> queue = reservations.get(item.getId());
+        if (queue == null || !(item instanceof Borrowable borrowable)) {
+            return null;
+        }
+        for (Member member : queue) {
+            if (countLoans(member) < member.getMaxItems()) {
+                cancelReservation(member, item.getId());
+                return lend(item, borrowable, member);
+            }
+        }
+        return null;
     }
 
     /** Moves simulated time forward and returns the new day. */

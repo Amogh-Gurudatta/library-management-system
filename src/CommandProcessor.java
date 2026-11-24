@@ -61,9 +61,20 @@ public class CommandProcessor {
                 Loan loan = library.borrow(a[0], a[1]);
                 return List.of("OK due on day " + loan.getDueDay());
             }
-            case "RETURN":
+            case "RETURN": {
                 a = fields(parts, "itemId");
-                return List.of("OK fine " + library.returnItem(a[0]));
+                ReturnResult result = library.returnItem(a[0]);
+                String output = "OK fine " + result.getFine();
+                Loan next = result.getReissuedLoan();
+                if (next != null) {
+                    output += ", issued to " + next.getMember().getId() + " due on day " + next.getDueDay();
+                }
+                return List.of(output);
+            }
+            case "RESERVE":
+                a = fields(parts, "memberId", "itemId");
+                library.reserve(a[0], a[1]);
+                return List.of("OK reserved");
             case "ADVANCE":
                 a = fields(parts, "days");
                 return List.of("OK today is day " + library.advance(parseDays(a[0])));

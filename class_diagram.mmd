@@ -69,37 +69,57 @@ classDiagram
         -Member member
         -int borrowDay
         -int dueDay
+        -int finePerDay
+        +Loan(LibraryItem item, Borrowable b, Member m, int borrowDay)
         +getItem() LibraryItem
         +getMember() Member
+        +getBorrowDay() int
         +getDueDay() int
+        +getFinePerDay() int
         +daysLate(int today) int
         +fine(int today) int
+    }
+
+    class ReturnResult {
+        -int fine
+        -Loan reissuedLoan
+        +getFine() int
+        +getReissuedLoan() Loan
     }
 
     class Library {
         -Map~String, LibraryItem~ items
         -Map~String, Member~ members
         -Map~String, Loan~ loans
+        -Map~String, List#lt;Member#gt;~ reservations
         -int today
         +addItem(LibraryItem item)
         +addMember(Member member)
+        +findItem(String itemId) LibraryItem
+        +findMember(String memberId) Member
+        +findLoan(String itemId) Loan
         +borrow(String memberId, String itemId) Loan
-        +returnItem(String itemId) int
+        +returnItem(String itemId) ReturnResult
+        +reserve(String memberId, String itemId)
         +advance(int days) int
         +search(String text) List~LibraryItem~
         +loansOf(String memberId) List~Loan~
         +overdueLoans() List~Loan~
         +inventory() List~LibraryItem~
         +getToday() int
+        -lend(LibraryItem item, Borrowable b, Member m) Loan
+        -issueToNextInQueue(LibraryItem item) Loan
+        -cancelReservation(Member m, String itemId)
+        -countLoans(Member m) int
     }
 
     class CommandProcessor {
         -Library library
-        +run(Scanner in)
-        -execute(String line) String
-        -requireFields(String[] parts, int count)
-        -parseInt(String text, String field) int
-        -parseMemberType(String text) Member
+        +run(Scanner in, PrintStream out)
+        -execute(String line) List~String~
+        -fields(String[] parts, String... names)$ String[]
+        -parseDays(String text)$ int
+        -createMember(String id, String name, String type)$ Member
     }
 
     class Main {
@@ -146,6 +166,9 @@ classDiagram
     Library "1" *-- "*" Loan : active loans
     Loan "*" --> "1" LibraryItem : of
     Loan "*" --> "1" Member : held by
+    Library ..> ReturnResult : creates
+    ReturnResult --> "0..1" Loan : reissued
+    Library "1" o-- "*" Member : reservation queues
 
     %% Dependencies
     Library ..> Borrowable : checks instanceof
@@ -169,6 +192,7 @@ classDiagram
     style CommandProcessor fill:#fef3c7,stroke:#d97706,color:#111
     style Library fill:#fef3c7,stroke:#d97706,color:#111
     style Loan fill:#fef3c7,stroke:#d97706,color:#111
+    style ReturnResult fill:#fef3c7,stroke:#d97706,color:#111
     style LibraryException fill:#fee2e2,stroke:#dc2626,color:#111
     style ItemNotFoundException fill:#fee2e2,stroke:#dc2626,color:#111
     style MemberNotFoundException fill:#fee2e2,stroke:#dc2626,color:#111
