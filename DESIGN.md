@@ -98,3 +98,29 @@ Each section names the class that owns a rule, so you can find it quickly.
   - Returned on day 14, due on day 14 → `OK fine 0`.
   - Magazine returned on day 20, due on day 14 → 6 days × ₹1 → `OK fine 6`.
 - `Library.returnItem` now returns the fine (`int`). It doesn't return the `Loan`, because the caller only needs the amount.
+
+## Step 11: Input validation
+
+The brief assumes well-formed input, but the TAs overrode this: invalid input is checked in evaluation. Every malformed line throws `InvalidInputException`, and every reused ID throws `DuplicateIdException`. Both extend `LibraryException`, so the same single `catch` in `run()` prints them as `ERROR <message>`. Nothing new was added to the error handling path.
+
+| Input | Output | Where |
+|---|---|---|
+| `FOO`, or the right name in the wrong case (`borrow`) | `ERROR unknown command FOO` | `execute`, `default:` branch |
+| A line starting with `\|` | `ERROR missing command` | `execute`, `case "":` |
+| Too few or too many fields | `ERROR BORROW expects 2 fields: memberId\|itemId` | `fields(...)` |
+| A field that is empty or only spaces | `ERROR title cannot be empty` | `fields(...)` |
+| `ADVANCE` with a non-number, decimal, negative or too-large value | `ERROR days must be a non-negative number` | `parseDays` |
+| Member type other than `STUDENT`, `STAFF` or `FACULTY` (exact case) | `ERROR unknown member type ADMIN` | `createMember` |
+| ADD_ with an ID already used | `ERROR duplicate id B1` | `Library.addItem` / `addMember` |
+
+Decisions behind the table:
+
+- **`fields(parts, "id", "title", "author")`** does all the count and empty checks in one place. The field names give both the error message and the documentation of each command. A new command needs one `fields(...)` call to be fully validated.
+- **Validation order:** command name first, then field count, then empty fields, then field content (number, member type), then the library rules.
+- **Command names and member types are case-sensitive**, because the brief spells them in capitals. To accept lowercase, use `command.toUpperCase()` and `type.toUpperCase()`.
+- **`ADVANCE|0` is allowed** (it's harmless and prints the current day). Negative days are rejected, because time only moves forward.
+- **Integer overflow** (`ADVANCE|99999999999`) is caught, because `Integer.parseInt` throws `NumberFormatException` for it, the same as for `abc`.
+- **Item and member IDs are separate namespaces.** A member `B1` and a book `B1` can both exist, because the commands always say which kind of ID they expect. Two *items* can't share an ID, even across types (a book and a magazine), because they share the one catalogue map.
+- **The duplicate check lives in `Library`**, not `CommandProcessor`. "IDs are unique" is a rule about the library's data, and only the library can see the existing IDs.
+- **Why validate in `CommandProcessor`?** It is the boundary where text becomes objects. Everything behind it (`Library`, `Loan`, the item and member classes) can assume clean values.
+- **Blank lines are still skipped** (see step 8).

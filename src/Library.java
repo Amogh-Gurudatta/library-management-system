@@ -16,11 +16,19 @@ public class Library {
         return today;
     }
 
-    public void addItem(LibraryItem item) {
+    /** Adds an item to the catalogue. Item IDs must be unique among items. */
+    public void addItem(LibraryItem item) throws DuplicateIdException {
+        if (items.containsKey(item.getId())) {
+            throw new DuplicateIdException(item.getId());
+        }
         items.put(item.getId(), item);
     }
 
-    public void addMember(Member member) {
+    /** Registers a member. Member IDs must be unique among members. */
+    public void addMember(Member member) throws DuplicateIdException {
+        if (members.containsKey(member.getId())) {
+            throw new DuplicateIdException(member.getId());
+        }
         members.put(member.getId(), member);
     }
 
