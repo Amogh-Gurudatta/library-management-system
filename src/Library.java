@@ -103,6 +103,48 @@ public class Library {
         return loans.get(itemId);
     }
 
+    /** Items whose title contains the text (case-insensitive), sorted by title, then ID. */
+    public List<LibraryItem> search(String text) {
+        List<LibraryItem> result = new ArrayList<>();
+        for (LibraryItem item : items.values()) {
+            if (item.matchesTitle(text)) {
+                result.add(item);
+            }
+        }
+        result.sort(Comparator.comparing(LibraryItem::getTitle).thenComparing(LibraryItem::getId));
+        return result;
+    }
+
+    /** A member's current loans, sorted by due day, then item ID. */
+    public List<Loan> loansOf(String memberId) throws MemberNotFoundException {
+        Member member = findMember(memberId);
+        List<Loan> result = new ArrayList<>();
+        for (Loan loan : loans.values()) {
+            if (loan.getMember() == member) {
+                result.add(loan);
+            }
+        }
+        result.sort(Comparator.comparingInt(Loan::getDueDay).thenComparing(Library::itemIdOf));
+        return result;
+    }
+
+    /** Every loan past its due day, most days late first, then item ID. */
+    public List<Loan> overdueLoans() {
+        List<Loan> result = new ArrayList<>();
+        for (Loan loan : loans.values()) {
+            if (loan.daysLate(today) > 0) {
+                result.add(loan);
+            }
+        }
+        result.sort(Comparator.comparingInt((Loan loan) -> loan.daysLate(today)).reversed()
+                .thenComparing(Library::itemIdOf));
+        return result;
+    }
+
+    private static String itemIdOf(Loan loan) {
+        return loan.getItem().getId();
+    }
+
     /** Every item, sorted by ID. */
     public List<LibraryItem> inventory() {
         List<LibraryItem> result = new ArrayList<>(items.values());

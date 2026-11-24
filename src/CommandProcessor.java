@@ -67,6 +67,15 @@ public class CommandProcessor {
             case "ADVANCE":
                 a = fields(parts, "days");
                 return List.of("OK today is day " + library.advance(parseDays(a[0])));
+            case "SEARCH":
+                a = fields(parts, "text");
+                return search(a[0]);
+            case "LOANS":
+                a = fields(parts, "memberId");
+                return loans(a[0]);
+            case "OVERDUE":
+                fields(parts);
+                return overdue();
             case "INVENTORY":
                 fields(parts);
                 return inventory();
@@ -123,6 +132,32 @@ public class CommandProcessor {
             default:
                 throw new InvalidInputException("unknown member type " + type);
         }
+    }
+
+    private List<String> search(String text) {
+        List<String> lines = new ArrayList<>();
+        for (LibraryItem item : library.search(text)) {
+            lines.add(item.getId() + "|" + item.getTypeName() + "|" + item.getTitle());
+        }
+        return orNone(lines);
+    }
+
+    private List<String> loans(String memberId) throws MemberNotFoundException {
+        List<String> lines = new ArrayList<>();
+        for (Loan loan : library.loansOf(memberId)) {
+            lines.add(loan.getItem().getId() + "|" + loan.getItem().getTitle() + "|" + loan.getDueDay());
+        }
+        return orNone(lines);
+    }
+
+    private List<String> overdue() {
+        int today = library.getToday();
+        List<String> lines = new ArrayList<>();
+        for (Loan loan : library.overdueLoans()) {
+            lines.add(loan.getItem().getId() + "|" + loan.getMember().getId() + "|"
+                    + loan.daysLate(today) + "|" + loan.fine(today));
+        }
+        return orNone(lines);
     }
 
     private List<String> inventory() {

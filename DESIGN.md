@@ -124,3 +124,25 @@ Decisions behind the table:
 - **The duplicate check lives in `Library`**, not `CommandProcessor`. "IDs are unique" is a rule about the library's data, and only the library can see the existing IDs.
 - **Why validate in `CommandProcessor`?** It is the boundary where text becomes objects. Everything behind it (`Library`, `Loan`, the item and member classes) can assume clean values.
 - **Blank lines are still skipped** (see step 8).
+
+## Step 12: SEARCH, LOANS, OVERDUE
+
+- **Each report is a `Comparator`**, built with `Comparator.comparing(...)` and `.thenComparing(...)` for the tie-break:
+
+  | Report | Sort | Code |
+  |---|---|---|
+  | SEARCH | title, then ID | `comparing(LibraryItem::getTitle).thenComparing(LibraryItem::getId)` |
+  | LOANS | due day, then item ID | `comparingInt(Loan::getDueDay).thenComparing(Library::itemIdOf)` |
+  | OVERDUE | days late (most first), then item ID | `comparingInt(loan -> loan.daysLate(today)).reversed().thenComparing(...)` |
+  | INVENTORY | item ID | `comparing(LibraryItem::getId)` |
+
+- **The brief gives no tie-break for SEARCH.** Two items can share a title, so the ID is added to keep the output deterministic.
+- **The `.reversed()` in OVERDUE flips only the days-late part.** It applies to the comparator built so far, which is just the days-late one. The item-ID tie-break added afterwards stays ascending.
+- **Titles are compared exactly as written** (`String.compareTo`), so capital letters sort before lowercase. For a case-insensitive order, use `comparing(LibraryItem::getTitle, String.CASE_INSENSITIVE_ORDER)`.
+- **Matching is case-insensitive.** `matchesTitle` lowercases both strings with `Locale.ROOT`, so the result doesn't depend on the computer's language setting.
+- **`Library` returns objects; `CommandProcessor` formats them.**
+  - `Library.loansOf` returns `List<Loan>`, and `CommandProcessor.loans` turns each into `itemId|title|dueDay`.
+  - Changing an output format never touches the rules.
+- **OVERDUE computes the fine "so far"** with `loan.fine(today)`. It reuses the method RETURN uses, so the two can never disagree.
+- **`LOANS` for an unknown member** throws `MemberNotFoundException` (from `findMember`). A known member with no loans prints `NONE`.
+- **`tests/sample.in` and `tests/sample.expected`** were copied from section 9 of the brief. `java -cp out Main < tests/sample.in | diff - tests/sample.expected` prints nothing, so the output matches exactly.
