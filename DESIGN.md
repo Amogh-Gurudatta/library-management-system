@@ -63,3 +63,26 @@ Each section names the class that owns a rule, so you can find it quickly.
   There is no stored status field that could drift out of sync with the loans map.
 - **Sorting.** INVENTORY sorts with `Comparator.comparing(LibraryItem::getId)`. IDs are compared as strings, so `B10` comes before `B2`.
 - **`orNone(lines)`** turns an empty report into the single line `NONE`, as the brief requires for every report.
+
+## Step 9: BORROW and RETURN
+
+- **Exceptions from the start.** The brief's step 11 says to print errors first and replace them with exceptions later. Here they were thrown straight away, since the exception classes already existed from step 6. Step 11 instead adds input validation.
+- **Where each BORROW rule lives.**
+
+  | Rule | Checked in | Throws |
+  |---|---|---|
+  | Member must exist | `Library.findMember` | `MemberNotFoundException` |
+  | Item must exist | `Library.findItem` | `ItemNotFoundException` |
+  | Item must be borrowable | `Library.borrow` (`instanceof Borrowable`) | `ItemNotAvailableException.notBorrowable` |
+  | Item must not be on loan | `Library.borrow` (`loans.containsKey`) | `ItemNotAvailableException.onLoan` |
+  | Member below their limit | `Library.borrow` (`countLoans` vs `member.getMaxItems()`) | `BorrowLimitExceededException` |
+
+- **Check order: member, item, borrowable, on loan, limit.** The order matters when more than one rule fails at once.
+  - The brief's sample agrees: `BORROW|T1|B9` reports the item as not found.
+  - A member at their limit asking for an item that is on loan gets "is on loan". Item checks come before the limit check.
+  - To change the order, reorder the `if` blocks in `Library.borrow`.
+- **`if (!(item instanceof Borrowable borrowable)) throw ...;`** After this line, `borrowable` is in scope and known to be a `Borrowable`. The compiler allows it because the only way past the `if` is when the check succeeded (*flow scoping*).
+- **The held count is computed, not stored.** `countLoans(member)` counts the member's active loans. A separate counter on `Member` would have to be kept in step with `loans` on every borrow and return, and one missed update would cause a bug.
+- **Members are compared with `==` in `countLoans`.** Each member exists exactly once in the library, so comparing object identity is correct and cheap.
+- **RETURN still calls `findItem` first**, so an unknown ID reports "item X not found" rather than "X is not on loan".
+- `loans.remove(itemId)` both ends the loan and tells us whether there was one: it returns `null` if the item wasn't on loan.
