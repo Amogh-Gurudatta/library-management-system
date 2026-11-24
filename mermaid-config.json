@@ -1,0 +1,3 @@
+{ "theme": "default",
+  "class": { "nodeSpacing": 90, "rankSpacing": 110, "padding": 14, "useMaxWidth": false },
+  "themeVariables": { "fontSize": "16px" } }
