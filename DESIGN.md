@@ -27,3 +27,18 @@ Each section names the class that owns a rule, so you can find it quickly.
   - `ItemNotAvailableException.onLoan(id)` and `.notBorrowable(id)`
   - `ReservationNotAllowedException.available(id)`, `.alreadyHolds(...)` and `.alreadyReserved(...)`
 - **`LibraryException` extends `Exception`, not `RuntimeException`.** That makes every exception *checked*: the compiler forces each method that can fail to declare it with `throws`. That makes it easy to see which methods can fail.
+
+## Step 7: Hand test from main
+
+- `Main` built one item and one member of each type and printed their rules. Output:
+  ```
+  B1 BOOK fine 2/day
+  M1 MAGAZINE fine 1/day
+  R1 REFERENCE not borrowable
+  S1 max 3 period 14
+  T1 max 4 period 21
+  F1 max 5 period 30
+  ```
+  These match the tables in sections 2 and 3 of the brief.
+- The test uses **`instanceof` pattern matching** (`item instanceof Borrowable b`). If the check passes, `b` is already the item viewed as a `Borrowable`, with no separate cast. The same idiom is used in `Library.borrow`.
+- The test loops over `LibraryItem[]` and `Member[]` and calls the overridden methods. This is **polymorphism**: the loop doesn't know or care which subclass it has.
