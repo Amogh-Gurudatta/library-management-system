@@ -42,3 +42,24 @@ Each section names the class that owns a rule, so you can find it quickly.
   These match the tables in sections 2 and 3 of the brief.
 - The test uses **`instanceof` pattern matching** (`item instanceof Borrowable b`). If the check passes, `b` is already the item viewed as a `Borrowable`, with no separate cast. The same idiom is used in `Library.borrow`.
 - The test loops over `LibraryItem[]` and `Member[]` and calls the overridden methods. This is **polymorphism**: the loop doesn't know or care which subclass it has.
+
+## Step 8: Command loop, ADD_ commands, INVENTORY
+
+- **Who does what.**
+  - `Main` only wires things together: `new CommandProcessor(new Library()).run(...)`.
+  - `CommandProcessor` turns text into method calls and results back into text.
+  - `Library` knows nothing about text formats or `|` separators.
+- **`execute(line)` returns a `List<String>`** of lines to print instead of printing directly. Single-line results and multi-line reports are handled the same way, and only `run()` touches the output stream.
+- **Splitting.** `line.split("\\|", -1)`:
+  - The `\\|` escapes the pipe, because `split` takes a regex and a bare `|` means "or".
+  - The `-1` keeps trailing empty fields, so `ADD_BOOK|B1|Title|` gives 4 fields, not 3. Step 11 validation relies on this.
+- **Every field is trimmed**, so stray spaces or a Windows `\r` at the end of a line don't break IDs.
+- **Blank lines are skipped silently**, so an empty line at the end of a test file doesn't print an extra `ERROR`. To report them instead, change the `continue` in `run()` to throw an `InvalidInputException`.
+- **`createMember` is the only place the member type text appears.** It is a *factory*: it turns `"STUDENT"` into a `Student`. After that, no code ever checks the type again, because the object answers for itself through `getMaxItems()` and `getLoanPeriod()`. The brief's warning about `if (type.equals("STUDENT"))` means exactly this: the text is translated once, at the boundary.
+- **INVENTORY status** comes from two facts:
+  - not a `Borrowable` → `NOT_BORROWABLE`;
+  - otherwise it depends on whether `library.findLoan(id)` returns a loan.
+
+  There is no stored status field that could drift out of sync with the loans map.
+- **Sorting.** INVENTORY sorts with `Comparator.comparing(LibraryItem::getId)`. IDs are compared as strings, so `B10` comes before `B2`.
+- **`orNone(lines)`** turns an empty report into the single line `NONE`, as the brief requires for every report.
