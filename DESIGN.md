@@ -11,3 +11,19 @@ Each section names the class that owns a rule, so you can find it quickly.
 - **One coordinator.** `Library` holds the catalogue, the members, the active loans and today's day. Every rule is checked there.
 - **`Loan` is its own class**, not just a link between a member and an item. A loan has data of its own (borrow day, due day, fine rate) and behaviour of its own (days late, fine). Putting that on `Member` or `LibraryItem` would mix responsibilities.
 - **Exceptions.** Every failure is a subclass of `LibraryException`. They are thrown where the rule is checked and caught once, in the command loop.
+
+## Step 6: Classes, fields, constructors, getters
+
+- **Fields are `private final`** wherever the value never changes after construction (IDs, titles, authors). Only `Library.today` is mutable.
+- **The rules live in overridden methods, not in fields or `if` chains.**
+  - `Book.getFinePerDay()` returns 2 and `Magazine.getFinePerDay()` returns 1.
+  - `Student`, `Staff` and `Faculty` each override `getMaxItems()` and `getLoanPeriod()`.
+  - Changing a rule is a one-line edit in one class.
+- **`getTypeName()` is abstract** in `LibraryItem`, so every new item type is forced to say what it is called in reports.
+- **Loan's constructor takes the `Borrowable` as a parameter** as well as the `LibraryItem`. Callers pass the same object twice (`new Loan(item, (Borrowable) item, ...)` after an `instanceof` check). The fine rate is copied into the loan, so `Loan` never has to cast anything.
+- **The due day is computed once, in the `Loan` constructor**, as `borrowDay + member.getLoanPeriod()`.
+- **`Library.loans` is keyed by item ID.** A map key is unique, so "an item can be on loan to only one member" holds by construction.
+- **Exceptions with two or three messages use static factory methods**, so the call site reads like the rule:
+  - `ItemNotAvailableException.onLoan(id)` and `.notBorrowable(id)`
+  - `ReservationNotAllowedException.available(id)`, `.alreadyHolds(...)` and `.alreadyReserved(...)`
+- **`LibraryException` extends `Exception`, not `RuntimeException`.** That makes every exception *checked*: the compiler forces each method that can fail to declare it with `throws`. That makes it easy to see which methods can fail.
