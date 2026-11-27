@@ -6,9 +6,9 @@ Technical reference for developers and AI agents working on this codebase. For t
 
 | Task | Command |
 |---|---|
-| Compile | `javac --release 21 -d out src/*.java` |
-| Run | `java -cp out Main < input.txt` |
-| Full test suite | `./run_tests.sh` (clean build with `-Werror`, then diffs every test; exits 1 on any failure) |
+| Compile | `make` (incremental; or `javac --release 21 -d out src/*.java`) |
+| Run | `make run INPUT=input.txt` (or `java -cp out Main < input.txt`) |
+| Full test suite | `make test`, which calls `./run_tests.sh` (clean build with `-Werror`, then diffs every test; exits 1 on any failure) |
 | CI | `.github/workflows/ci.yml` runs `./run_tests.sh` on Temurin 21 for every push and PR |
 
 - Target **Java 21** (the version used in the course) (`--release 21`).

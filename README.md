@@ -17,19 +17,18 @@ You type commands (or feed it a file of them), and it answers each one on its ow
 You need **Java 21 or newer**. Check with `java -version`.
 
 ```bash
-# 1. Compile
-javac -d out src/*.java
-
-# 2. Run it, typing commands yourself (press Ctrl+D to finish)
-java -cp out Main
-
-# 3. Or run a whole file of commands
-java -cp out Main < tests/sample.in
+make                          # compile
+make run                      # run it, typing commands yourself (Ctrl+D to finish)
+make run INPUT=tests/sample.in   # or run a whole file of commands
+make test                     # run the full test suite
+make help                     # list every target
 ```
 
-To run the full test suite:
+No `make`? The plain commands work too:
 
 ```bash
+javac -d out src/*.java
+java -cp out Main < tests/sample.in
 ./run_tests.sh
 ```
 
@@ -54,13 +53,13 @@ Ananya, a student, borrowed the book on day 0. Students keep books for 14 days, 
 ## How the library works
 
 | Item | Can it be borrowed? | Late fine |
-|---|---|---|
+| --- | --- | --- |
 | Book | Yes | ₹2 per day |
 | Magazine | Yes | ₹1 per day |
 | Reference book | No, library use only | none |
 
 | Member | Items at once | Loan length |
-|---|---|---|
+| --- | --- | --- |
 | Student | 3 | 14 days |
 | Staff | 4 | 21 days |
 | Faculty | 5 | 30 days |
@@ -75,7 +74,7 @@ Ananya, a student, borrowed the book on day 0. Students keep books for 14 days, 
 Fields are separated by `|`, so titles and names can contain spaces.
 
 | Command | What it does | Example reply |
-|---|---|---|
+| --- | --- | --- |
 | `ADD_BOOK\|id\|title\|author` | Adds a book | `OK` |
 | `ADD_MAGAZINE\|id\|title\|issue` | Adds a magazine | `OK` |
 | `ADD_REFERENCE\|id\|title\|author` | Adds a reference book | `OK` |
@@ -99,7 +98,7 @@ Fields are separated by `|`, so titles and names can contain spaces.
 The program prints `ERROR` followed by a reason, then carries on with the next command. Nothing is changed by a command that fails.
 
 | Situation | Message |
-|---|---|
+| --- | --- |
 | Unknown item or member | `ERROR item B9 not found` / `ERROR member X1 not found` |
 | Item already out, or not lendable | `ERROR B1 is on loan` / `ERROR R1 cannot be borrowed` |
 | Member already at their limit | `ERROR S1 has reached the limit of 3` |
@@ -119,6 +118,7 @@ The program prints `ERROR` followed by a reason, then carries on with the next c
 ```text
 src/                 The Java source code (one class per file)
 tests/               Test inputs (.in) and the exact output expected (.expected)
+Makefile             Shortcuts: make, make run, make test, make clean
 run_tests.sh         Compiles everything and checks every test
 docs/                Documentation, the project brief and the class diagram
   DESIGN.md          Why the code is built the way it is

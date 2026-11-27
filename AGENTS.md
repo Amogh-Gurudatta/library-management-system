@@ -3,6 +3,7 @@
 Java 21 command-line library management system (college capstone). Default package, no dependencies.
 
 - **Build and test:** `./run_tests.sh`. It must print `0 failed` before you commit.
+- **Shortcuts:** `make` (compile), `make run INPUT=file`, `make test`, `make clean`, `make help`.
 - **Run:** `javac --release 21 -d out src/*.java && java -cp out Main < tests/sample.in`
 
 Hard rules:

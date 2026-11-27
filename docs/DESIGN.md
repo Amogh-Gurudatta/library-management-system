@@ -235,3 +235,12 @@ Decisions behind the table:
 - **The brief leaves one case open:** a skipped member could later BORROW the item directly while still in its queue. Without handling, the item would be auto-issued straight back to them when they return it. **Decision: borrowing an item cancels your own reservation for it** (`cancelReservation` in `borrow`). `tests/reservations_skip` covers this.
 - **Changing the queue while looping over it.** `issueToNextInQueue` removes from the list inside a for-each loop and returns immediately afterwards. Continuing the loop after a removal would throw `ConcurrentModificationException`.
 - **The class diagram was updated** to match the final code: `ReturnResult`, the reservations field, `reserve()`, the private helpers, and the real `CommandProcessor` method names.
+
+## Makefile
+
+- A `Makefile` gives the usual C-style workflow (`make`, `make run`, `make test`, `make clean`) for a Java project, so nobody has to remember the `javac` flags.
+- **Incremental builds:** `javac` has to see every source file at once, so there is no per-file rule. Instead, `out/.built` is an empty *stamp file*. `make` recompiles everything whenever any `src/*.java` is newer than the stamp, and does nothing otherwise.
+- **`make test` calls `./run_tests.sh`** instead of duplicating it. The script is the one place that knows how tests are run, and CI uses it directly, so it works on machines without `make`.
+- The compiler flags (`-Xlint:all,-serial -Werror`, `--release 21`) match `run_tests.sh`, so a build that passes one passes the other.
+- **`make diagram`** re-exports the class diagram PDF.
+
