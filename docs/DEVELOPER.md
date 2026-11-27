@@ -120,6 +120,7 @@ Edit the single method listed in the per-type rules table above. Then update any
 
 ## Conventions
 
+- **Input is read only through `java.util.Scanner`.** `Main` creates the single `Scanner` over `System.in`, and `CommandProcessor.run` and `InteractiveShell.run` take that `Scanner`. `InputRuleTest` fails the build if a banned input class (`BufferedReader`, `InputStreamReader`, `Console`, ...) appears in `src/main`.
 - One public class per file. Fields are `private final` unless they really change.
 - Use checked exceptions (`extends LibraryException`) for every user-visible failure. Never print errors outside `run()`.
 - No `if (type.equals("STUDENT"))`-style branching on types. Use polymorphism, or `instanceof Borrowable` for capabilities.

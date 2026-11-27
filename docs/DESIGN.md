@@ -263,3 +263,9 @@ Decisions behind the table:
 - **Colour** uses plain ANSI escape codes (no library) and is switched off by `NO_COLOR`.
 - `make run` now starts the interactive shell; `make run INPUT=file` still runs a file in plain mode.
 
+## Input rule: Scanner only
+
+- All input goes through `java.util.Scanner`, as the course requires. `Main` builds the one `Scanner` over `System.in` and passes it down. `run(Scanner, PrintStream)` is the only entry that reads, in both `CommandProcessor` and `InteractiveShell`.
+- `Scanner.nextLine()` gives one command per line, and `hasNextLine()` ends the loop at end of input, as the brief describes.
+- `InputRuleTest` scans `src/main` and fails if `BufferedReader`, `InputStreamReader`, `Console` and similar classes appear, so the rule can't be broken by accident. Test code may use `Files.readString` to load its fixture files; that is not program input.
+
