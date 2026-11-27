@@ -1,6 +1,6 @@
 # Developer Guide
 
-Technical reference for developers and AI agents working on this codebase. For the reasoning behind decisions, see [DESIGN.md](DESIGN.md). For the authoritative behaviour spec, see [capstone_problem_statement.pdf](capstone_problem_statement.pdf). Input validation (section "Output contract") is an addition required by the TAs.
+Technical reference for developers and AI agents working on this codebase. For the reasoning behind decisions, see [DESIGN.md](DESIGN.md). The behaviour specification is the project brief (provided separately) together with the "Output contract" section below. Input validation, which the brief does not cover, is an addition required by the TAs.
 
 ## Build and test
 

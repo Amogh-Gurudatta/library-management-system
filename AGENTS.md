@@ -8,7 +8,7 @@ Java 21 command-line library management system (college capstone). Default packa
 - **Layout:** code in `src/main/java`, JUnit tests in `src/test/java`, whole-program `.in`/`.expected` pairs in `src/test/resources/golden` (picked up automatically by `GoldenTest`).
 
 Hard rules:
-- Output must match the spec character for character (`docs/capstone_problem_statement.pdf`, plus the validation rules in `docs/DEVELOPER.md`).
+- Output must match the spec character for character (the project brief, plus the validation rules in `docs/DEVELOPER.md`).
 - Plain mode (no flags) must print exactly what the spec says. Presentation extras (prompt, colour, tables, help) live only in `InteractiveShell`, which runs only with `-i`, and never alter command behaviour.
 - All input is read with `java.util.Scanner` only. No `BufferedReader`, `InputStreamReader`, `System.console()` or similar (enforced by `InputRuleTest`).
 - Never use the system clock. Time is `Library.today`, advanced only by `ADVANCE`.

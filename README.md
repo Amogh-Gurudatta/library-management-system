@@ -157,7 +157,6 @@ library-management-system/
 │   ├── DESIGN.md                   Why the code is built the way it is
 │   ├── DEVELOPER.md                Technical guide for anyone changing the code
 │   ├── EXTENSIONS.md               Extra work beyond the course requirements
-│   ├── capstone_problem_statement.pdf   The project brief
 │   ├── diagram/                    Class diagram (PDF + Mermaid source)
 │   └── milestones/                 Submitted milestone files
 ├── .github/workflows/ci.yml        Builds and tests automatically on GitHub
@@ -200,7 +199,6 @@ Main  ──►  CommandProcessor  ──►  Library  ──►  items, members
 
 ## Learn more
 
-- **[Project brief](docs/capstone_problem_statement.pdf):** the original problem statement.
 - **[Class diagram](docs/diagram/class_diagram.pdf):** how the classes fit together (source in `docs/diagram/class_diagram.mmd`).
 - **[DESIGN.md](docs/DESIGN.md):** every design decision explained, step by step.
 - **[DEVELOPER.md](docs/DEVELOPER.md):** architecture, invariants, and how to add a new command or type.
