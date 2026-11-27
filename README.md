@@ -153,6 +153,7 @@ Makefile             Shortcuts: make, make run, make test, make clean
 docs/                Documentation, the project brief and the class diagram
   DESIGN.md          Why the code is built the way it is
   DEVELOPER.md       Technical guide for anyone changing the code
+  EXTENSIONS.md      Extra work beyond the course requirements
   diagram/           Class diagram (PDF + Mermaid source)
   milestones/        Submitted milestone files
 AGENTS.md            Short brief for AI coding assistants
@@ -164,3 +165,4 @@ AGENTS.md            Short brief for AI coding assistants
 - **[Class diagram](docs/diagram/class_diagram.pdf):** how the classes fit together (source in `docs/diagram/class_diagram.mmd`).
 - **[DESIGN.md](docs/DESIGN.md):** every design decision explained, step by step.
 - **[DEVELOPER.md](docs/DEVELOPER.md):** architecture, invariants, and how to add a new command or type.
+- **[EXTENSIONS.md](docs/EXTENSIONS.md):** the extra work added on top of the course requirements.
