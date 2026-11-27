@@ -14,22 +14,21 @@ You type commands (or feed it a file of them), and it answers each one on its ow
 
 ## Quick start
 
-You need **Java 21 or newer**. Check with `java -version`.
+You need **Java 21 or newer**. Check with `java -version`. Maven is not needed; the project includes its own wrapper (`mvnw`).
 
 ```bash
 make                          # compile
 make run                      # run it, typing commands yourself (Ctrl+D to finish)
-make run INPUT=tests/sample.in   # or run a whole file of commands
+make run INPUT=src/test/resources/golden/sample.in   # or run a whole file of commands
 make test                     # run the full test suite
 make help                     # list every target
 ```
 
-No `make`? The plain commands work too:
+No `make`? Use Maven directly. The included wrapper downloads the right version for you:
 
 ```bash
-javac -d out src/*.java
-java -cp out Main < tests/sample.in
-./run_tests.sh
+./mvnw verify                                      # compile and test
+java -jar target/library-management-system.jar     # run (after verify or package)
 ```
 
 ---
@@ -116,10 +115,11 @@ The program prints `ERROR` followed by a reason, then carries on with the next c
 ## What's in the project
 
 ```text
-src/                 The Java source code (one class per file)
-tests/               Test inputs (.in) and the exact output expected (.expected)
+src/main/java/       The program (one class per file)
+src/test/java/       JUnit tests for the classes and the command checks
+src/test/resources/golden/   Whole-program tests: input (.in) and exact expected output (.expected)
+pom.xml, mvnw        Maven build and its wrapper
 Makefile             Shortcuts: make, make run, make test, make clean
-run_tests.sh         Compiles everything and checks every test
 docs/                Documentation, the project brief and the class diagram
   DESIGN.md          Why the code is built the way it is
   DEVELOPER.md       Technical guide for anyone changing the code

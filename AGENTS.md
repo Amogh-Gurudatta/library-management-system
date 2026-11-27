@@ -2,9 +2,10 @@
 
 Java 21 command-line library management system (college capstone). Default package, no dependencies.
 
-- **Build and test:** `./run_tests.sh`. It must print `0 failed` before you commit.
+- **Build and test:** `./mvnw verify` (or `make test`). It must end with `BUILD SUCCESS` before you commit.
 - **Shortcuts:** `make` (compile), `make run INPUT=file`, `make test`, `make clean`, `make help`.
-- **Run:** `javac --release 21 -d out src/*.java && java -cp out Main < tests/sample.in`
+- **Run:** `./mvnw -q -DskipTests package && java -jar target/library-management-system.jar < src/test/resources/golden/sample.in`
+- **Layout:** code in `src/main/java`, JUnit tests in `src/test/java`, whole-program `.in`/`.expected` pairs in `src/test/resources/golden` (picked up automatically by `GoldenTest`).
 
 Hard rules:
 - Output must match the spec character for character (`docs/capstone_problem_statement.pdf`, plus the validation rules in `docs/DEVELOPER.md`).

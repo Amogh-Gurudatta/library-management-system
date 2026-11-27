@@ -43,7 +43,7 @@ Main ──► CommandProcessor ──► Library ──► LibraryItem / Member
 | Change an error message | That exception's constructor or static factory |
 | Change the check order | Reorder the `if` blocks in `Library.borrow` / `Library.reserve` |
 
-After any change: `./run_tests.sh`, then update the affected `.expected` files.
+After any change: `make test`, then update the affected `.expected` files.
 
 The rest of this file is a step-by-step log of decisions, in build order.
 
@@ -190,15 +190,11 @@ Decisions behind the table:
   - Changing an output format never touches the rules.
 - **OVERDUE computes the fine "so far"** with `loan.fine(today)`. It reuses the method RETURN uses, so the two can never disagree.
 - **`LOANS` for an unknown member** throws `MemberNotFoundException` (from `findMember`). A known member with no loans prints `NONE`.
-- **`tests/sample.in` and `tests/sample.expected`** were copied from section 9 of the brief. `java -cp out Main < tests/sample.in | diff - tests/sample.expected` prints nothing, so the output matches exactly.
+- **`tests/sample.in` and `tests/sample.expected`** were copied from section 9 of the brief. running the program on it and diffing against the expected file prints nothing, so the output matches exactly. (Moved to `src/test/resources/golden/` in the Maven step.)
 
 ## Step 13: Tests and CI
 
-- **Each test is a pair**, `tests/<name>.in` and `tests/<name>.expected`. `./run_tests.sh`:
-  - compiles everything (warnings count as errors);
-  - runs each `.in` through `java -cp out Main`;
-  - diffs the output against the matching `.expected`;
-  - exits non-zero if anything differs.
+- **Each test is a pair**, `<name>.in` and `<name>.expected`. At this step a shell script, `run_tests.sh`, compiled everything (warnings as errors), ran each `.in` through the program, diffed the output against `.expected`, and exited non-zero on any difference. (It was replaced by `GoldenTest` in the Maven step, which does the same job as a JUnit test.)
 - **The expected outputs were worked out by hand from the rules**, not copied from the program's output. A test that only repeats what the program already prints can't catch a bug. Writing them this way caught a mistake in one expected file (a day-0 student loan is due on day 14, not day 0).
 
 | Test | What it proves |
@@ -210,7 +206,7 @@ Decisions behind the table:
 | `sorting` | Every tie-break: LOANS same due day → item ID; OVERDUE same days late → item ID; SEARCH same title → ID; string ID order (`B10` before `B2`) |
 | `invalid_input` | Every validation message from step 11. Bad lines change nothing, so the final INVENTORY shows only the valid commands' effect. |
 
-- **CI.** `.github/workflows/ci.yml` runs `./run_tests.sh` on GitHub Actions (Java 21) for every push and pull request. A red badge on the README means some commit broke a test.
+- **CI.** `.github/workflows/ci.yml` runs the tests on GitHub Actions (Java 21) for every push and pull request. A red badge on the README means some commit broke a test.
 - **Java 21.** The code compiles with `--release 21`, the version used in the course, so it runs on any JDK from 21 upwards. (It was first targeted at Java 17 and moved to 21 later; nothing in the code had to change, because every feature it uses already existed in 17.)
 
 ## Step 14: Reservations (bonus)
@@ -232,15 +228,26 @@ Decisions behind the table:
   - The new loan starts *today*, so its due day is `today + loanPeriod`.
   - If nobody qualifies, the item becomes AVAILABLE and the queue is kept for the next return.
 - **One lending path.** `lend(...)` is shared by BORROW and auto-issue, so a loan is always created and recorded the same way.
-- **The brief leaves one case open:** a skipped member could later BORROW the item directly while still in its queue. Without handling, the item would be auto-issued straight back to them when they return it. **Decision: borrowing an item cancels your own reservation for it** (`cancelReservation` in `borrow`). `tests/reservations_skip` covers this.
+- **The brief leaves one case open:** a skipped member could later BORROW the item directly while still in its queue. Without handling, the item would be auto-issued straight back to them when they return it. **Decision: borrowing an item cancels your own reservation for it** (`cancelReservation` in `borrow`). The `reservations_skip` golden test covers this.
 - **Changing the queue while looping over it.** `issueToNextInQueue` removes from the list inside a for-each loop and returns immediately afterwards. Continuing the loop after a removal would throw `ConcurrentModificationException`.
 - **The class diagram was updated** to match the final code: `ReturnResult`, the reservations field, `reserve()`, the private helpers, and the real `CommandProcessor` method names.
 
-## Makefile
+## Maven, JUnit and the Makefile
 
-- A `Makefile` gives the usual C-style workflow (`make`, `make run`, `make test`, `make clean`) for a Java project, so nobody has to remember the `javac` flags.
-- **Incremental builds:** `javac` has to see every source file at once, so there is no per-file rule. Instead, `out/.built` is an empty *stamp file*. `make` recompiles everything whenever any `src/*.java` is newer than the stamp, and does nothing otherwise.
-- **`make test` calls `./run_tests.sh`** instead of duplicating it. The script is the one place that knows how tests are run, and CI uses it directly, so it works on machines without `make`.
-- The compiler flags (`-Xlint:all,-serial -Werror`, `--release 21`) match `run_tests.sh`, so a build that passes one passes the other.
-- **`make diagram`** re-exports the class diagram PDF.
+- **Why Maven.** It's the standard Java build tool, so the project builds the same way on any machine and imports cleanly into IntelliJ, Eclipse and VS Code. The course doesn't require it; it was added for professionalism.
+- **The wrapper (`mvnw`, `.mvn/`)** downloads the pinned Maven version (3.9.9) on first use. Nobody has to install Maven, and CI uses the same version you do.
+- **Standard layout.** Maven expects `src/main/java` for code and `src/test/java` for tests, so the sources moved there from `src/`. Test resources live in `src/test/resources`.
+- **`pom.xml`** sets Java 21 (`maven.compiler.release`), turns every compiler warning into an error (`-Xlint:all,-serial`, `failOnWarning`), brings in JUnit 5 for tests only, and builds a runnable jar with `Main` as the entry point. The program itself still has no dependencies.
+- **Two kinds of test:**
 
+  | Kind | Class | Purpose |
+  |---|---|---|
+  | Unit | `ItemTest`, `MemberTest`, `LoanTest`, `LibraryTest` | One class at a time: per-type rules, due day and fine boundaries, every borrow/return/reserve rule and its exact message, sort orders, the reservation queue |
+  | Validation | `CommandProcessorTest` | Every invalid-input message from step 11, as a table of line → expected error |
+  | End-to-end | `GoldenTest` | Feeds each `.in` in `src/test/resources/golden/` to the whole program and compares with `.expected`. It finds new pairs by itself, so adding a test means adding two files. |
+
+- **Why keep the golden tests next to unit tests?** The golden files check the exact text the graders compare, such as the brief's sample. The unit tests pinpoint *which* rule broke when something fails.
+- **Test expectations are still written by hand** from the rules. This caught a wrong expectation of mine again: I mis-sorted two titles in a search test, and the program was right.
+- **`run_tests.sh` was removed.** `GoldenTest` does the same job inside Maven, so there is one way to run tests instead of two.
+- **The Makefile** is now a set of shortcuts around `./mvnw`: `make` (build), `make run [INPUT=file]`, `make test`, `make clean`, `make rebuild`, `make diagram` (re-exports the class diagram), `make help`.
+- **CI** runs `./mvnw -B verify`, with Maven's dependency cache turned on.

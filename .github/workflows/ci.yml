@@ -13,5 +13,6 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Build and run tests
-        run: ./run_tests.sh
+          cache: maven
+      - name: Build and test
+        run: ./mvnw -B verify

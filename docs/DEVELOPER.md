@@ -6,13 +6,14 @@ Technical reference for developers and AI agents working on this codebase. For t
 
 | Task | Command |
 |---|---|
-| Compile | `make` (incremental; or `javac --release 21 -d out src/*.java`) |
-| Run | `make run INPUT=input.txt` (or `java -cp out Main < input.txt`) |
-| Full test suite | `make test`, which calls `./run_tests.sh` (clean build with `-Werror`, then diffs every test; exits 1 on any failure) |
-| CI | `.github/workflows/ci.yml` runs `./run_tests.sh` on Temurin 21 for every push and PR |
+| Compile and package | `make` (or `./mvnw -DskipTests package`) |
+| Run | `make run INPUT=input.txt` (or `java -jar target/library-management-system.jar < input.txt`) |
+| Full test suite | `make test` (or `./mvnw verify`): compiles with warnings as errors, then runs every JUnit test, including the golden tests |
+| CI | `.github/workflows/ci.yml` runs `./mvnw -B verify` on Temurin 21 for every push and PR |
 
-- Target **Java 21** (the version used in the course) (`--release 21`).
-- No build tool and no dependencies. The source uses the **default package**, all in `src/`.
+- Target **Java 21** (the version used in the course), set in `pom.xml` (`maven.compiler.release`).
+- Maven build via the committed wrapper (`mvnw`), so no Maven install is needed. The only dependency is JUnit 5, in test scope. The program itself has none.
+- Layout: `src/main/java` (default package), `src/test/java` (JUnit), `src/test/resources/golden` (whole-program `.in`/`.expected` pairs).
 
 ## Architecture
 
@@ -93,7 +94,7 @@ stdin ──► CommandProcessor.run()  ──► execute(line) ──► Librar
 1. Add a `case "NAME":` in `CommandProcessor.execute`. Start with `a = fields(parts, "field1", ...)`, which gives you count and empty-field validation for free.
 2. Put any rule in a new `Library` method that throws a `LibraryException` subclass. Keep formatting in `CommandProcessor`.
 3. If it's a report, build a `List<String>` and return it through `orNone(lines)`.
-4. Add `tests/<name>.in` and `tests/<name>.expected`, with the expected output derived by hand, and run `./run_tests.sh`.
+4. Add a golden pair `src/test/resources/golden/<name>.in` and `<name>.expected`, with the expected output derived by hand (`GoldenTest` finds it automatically), plus JUnit tests for any new `Library` rule. Then run `make test`.
 5. Update `README.md`, this file, `docs/DESIGN.md`, and `docs/diagram/class_diagram.mmd` (then re-export the PDF; see DESIGN.md step 5).
 
 ### Add an item type
