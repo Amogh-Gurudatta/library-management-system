@@ -1,4 +1,5 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 import java.io.ByteArrayOutputStream;
@@ -24,6 +25,8 @@ class GoldenTest {
     Stream<DynamicTest> everyScriptProducesItsExpectedOutput() throws IOException {
         try (Stream<Path> files = Files.list(DIR)) {
             List<Path> inputs = files.filter(p -> p.getFileName().toString().endsWith(".in")).sorted().toList();
+            // A missing or renamed directory must fail loudly instead of silently running zero tests.
+            assertFalse(inputs.isEmpty(), "no .in files found in " + DIR.toAbsolutePath());
             return inputs.stream().map(input -> {
                 String name = input.getFileName().toString().replaceFirst("\\.in$", "");
                 return dynamicTest(name, () -> {

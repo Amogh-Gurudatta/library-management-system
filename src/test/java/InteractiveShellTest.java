@@ -67,4 +67,63 @@ class InteractiveShellTest {
         assertFalse(shell("FOO\nexit\n", false).contains("\u001B"));
         assertTrue(shell("FOO\nexit\n", true).contains("\u001B[31mERROR unknown command FOO\u001B[0m"));
     }
+
+    private static final String SETUP = "ADD_BOOK|B1|Intro|Cormen\nADD_MAGAZINE|M1|Wired|Oct\nADD_MEMBER|S1|Sam|STUDENT\n"
+            + "BORROW|S1|B1\nBORROW|S1|M1\n";
+
+    @Test
+    void searchLoansAndOverdueTablesHaveTheirHeadersAndRows() {
+        String out = shell(SETUP + "ADVANCE|20\nSEARCH|intro\nLOANS|S1\nOVERDUE\nexit\n", false);
+        assertTrue(out.contains("ID  TYPE  TITLE\n--  ----  -----\nB1  BOOK  Intro\n"), out);
+        assertTrue(out.contains("ITEM  TITLE  DUE DAY\n----  -----  -------\nB1    Intro  14\nM1    Wired  14\n"), out);
+        assertTrue(out.contains("ITEM  MEMBER  DAYS LATE  FINE\n----  ------  ---------  ----\n"
+                + "B1    S1      6          12\nM1    S1      6          6\n"), out);
+    }
+
+    /** The shell must never change what a command does: same script, same report lines as plain mode. */
+    @Test
+    void shellAndPlainModeAgreeOnEveryCommand() {
+        String script = SETUP + "ADD_BOOK|B1|dup|x\nBORROW|S1|B9\nADVANCE|3\nRETURN|M1\nINVENTORY\nFOO\n";
+        String plain = GoldenTest.run(script);
+        String viaShell = shell(script + "exit\n", false)
+                .replaceAll("library \\(day \\d+\\)> ", "");
+        for (String line : plain.split("\n")) {
+            if (line.startsWith("OK") || line.startsWith("ERROR")) {
+                assertTrue(viaShell.contains(line + "\n"), "missing '" + line + "' in:\n" + viaShell);
+            }
+        }
+        assertTrue(viaShell.contains("ERROR duplicate id B1\n"));
+        assertTrue(viaShell.contains("OK today is day 3\n"));
+    }
+
+    @Test
+    void shellKeepsTheLibraryStateBetweenLines() {
+        assertTrue(shell("ADD_BOOK|B1|T|A\nADD_BOOK|B1|T|A\nexit\n", false).contains("ERROR duplicate id B1"));
+    }
+
+    @Test
+    void aFailingReportCommandPrintsItsErrorNotATable() {
+        String out = shell("LOANS|X1\nSEARCH|\nexit\n", false);
+        assertTrue(out.contains("ERROR member X1 not found\n"), out);
+        assertTrue(out.contains("ERROR text cannot be empty\n"), out);
+        assertFalse(out.contains("---"), out);
+    }
+
+    @Test
+    void reportCommandsWithPaddingAroundTheNameStillGetTables() {
+        String out = shell("ADD_BOOK|B1|Intro|Cormen\n  SEARCH |intro\nexit\n", false);
+        assertTrue(out.contains("ID  TYPE  TITLE\n"), out);
+    }
+
+    @Test
+    void questionMarkShowsHelpAndBlankLinesJustReprompt() {
+        String out = shell("?\n\n   \nexit\n", false);
+        assertTrue(out.contains(InteractiveShell.HELP), out);
+        assertEquals(BANNER + "library (day 0)> " + InteractiveShell.HELP + "\nlibrary (day 0)> library (day 0)> library (day 0)> ", out);
+    }
+
+    @Test
+    void successLinesAreGreenWhenColourIsOn() {
+        assertTrue(shell("ADD_BOOK|B1|T|A\nexit\n", true).contains("\u001B[32mOK\u001B[0m"));
+    }
 }

@@ -18,6 +18,8 @@ class CommandProcessorTest {
         "ADD_MEMBER|S1|N|student;ERROR unknown member type student",
         "ADVANCE|abc;ERROR days must be a non-negative number",
         "ADVANCE|-3;ERROR days must be a non-negative number",
+        "ADVANCE|-1;ERROR days must be a non-negative number",
+        "ADVANCE|1 2;ERROR days must be a non-negative number",
         "ADVANCE|99999999999;ERROR days must be a non-negative number",
         "ADVANCE|2.5;ERROR days must be a non-negative number",
         "ADVANCE|;ERROR days cannot be empty",

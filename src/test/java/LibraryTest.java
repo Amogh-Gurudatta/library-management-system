@@ -1,7 +1,6 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -36,6 +35,14 @@ class LibraryTest {
                 assertThrows(MemberNotFoundException.class, () -> library.borrow("X1", "B9")).getMessage());
         assertEquals("item B9 not found",
                 assertThrows(ItemNotFoundException.class, () -> library.borrow("S1", "B9")).getMessage());
+    }
+
+    @Test
+    void reserveChecksTheMemberBeforeTheItem() {
+        assertEquals("member X1 not found",
+                assertThrows(MemberNotFoundException.class, () -> library.reserve("X1", "B9")).getMessage());
+        assertEquals("item B9 not found",
+                assertThrows(ItemNotFoundException.class, () -> library.reserve("S1", "B9")).getMessage());
     }
 
     @Test
@@ -127,6 +134,69 @@ class LibraryTest {
     void aReturnWithNobodyWaitingMakesTheItemAvailable() throws LibraryException {
         library.borrow("S1", "B1");
         assertNull(library.returnItem("B1").getReissuedLoan());
-        assertTrue(library.findLoan("B1") == null);
+        assertNull(library.findLoan("B1"));
+    }
+
+    @Test
+    void checksRunInTheDocumentedOrderWhenSeveralFail() throws LibraryException {
+        library.borrow("S1", "B1");
+        library.borrow("S1", "B2");
+        library.borrow("S1", "B3");
+        // S1 is at the limit, but a reference book fails as "cannot be borrowed" first.
+        assertEquals("R1 cannot be borrowed",
+                assertThrows(ItemNotAvailableException.class, () -> library.borrow("S1", "R1")).getMessage());
+        // B1 is on loan and S1 is at the limit: "on loan" wins over the limit.
+        assertEquals("B1 is on loan",
+                assertThrows(ItemNotAvailableException.class, () -> library.borrow("S1", "B1")).getMessage());
+        // Reserving a reference book fails as "cannot be borrowed" before "is available".
+        assertEquals("R1 cannot be borrowed",
+                assertThrows(ItemNotAvailableException.class, () -> library.reserve("S2", "R1")).getMessage());
+    }
+
+    @Test
+    void aRejectedBorrowKeepsTheMembersPlaceInTheQueue() throws LibraryException {
+        library.borrow("S1", "B1");
+        library.borrow("S2", "B2");
+        library.borrow("S2", "B3");
+        library.borrow("S2", "B4");
+        library.reserve("S2", "B1");
+        assertThrows(ItemNotAvailableException.class, () -> library.borrow("S2", "B1"));
+        library.returnItem("B2");          // S2 now has room again
+        assertEquals("S2", library.returnItem("B1").getReissuedLoan().getMember().getId());
+    }
+
+    @Test
+    void aMemberSkippedBecauseOfTheirLimitKeepsTheirPlace() throws LibraryException {
+        library.borrow("S1", "B1");
+        library.borrow("S2", "B2");
+        library.borrow("S2", "B3");
+        library.borrow("S2", "B4");
+        library.reserve("S2", "B1");
+        library.reserve("T1", "B1");
+        assertEquals("T1", library.returnItem("B1").getReissuedLoan().getMember().getId());
+        library.returnItem("B2");                 // S2 drops to 2 items
+        assertEquals("S2", library.returnItem("B1").getReissuedLoan().getMember().getId());
+    }
+
+    @Test
+    void borrowingAReservedItemDirectlyRemovesTheReservation() throws LibraryException {
+        library.borrow("S1", "B1");
+        library.reserve("S2", "B1");
+        library.returnItem("B1");                 // issued to S2 via the queue
+        assertEquals("S2", library.findLoan("B1").getMember().getId());
+        assertNull(library.returnItem("B1").getReissuedLoan());   // queue is empty now
+    }
+
+    @Test
+    void failedCommandsLeaveNoTrace() throws LibraryException {
+        library.borrow("S1", "B1");
+        int today = library.getToday();
+        assertThrows(LibraryException.class, () -> library.borrow("S2", "B1"));
+        assertThrows(LibraryException.class, () -> library.reserve("S1", "B1"));
+        assertThrows(LibraryException.class, () -> library.returnItem("B2"));
+        assertEquals(today, library.getToday());
+        assertEquals("S1", library.findLoan("B1").getMember().getId());
+        assertNull(library.findLoan("B2"));
+        assertNull(library.returnItem("B1").getReissuedLoan());
     }
 }
