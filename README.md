@@ -144,20 +144,59 @@ The program prints `ERROR` followed by a reason, then carries on with the next c
 
 ## What's in the project
 
+### Where things are
+
 ```text
-src/main/java/       The program (one class per file; `InteractiveShell` is the optional friendly mode)
-src/test/java/       JUnit tests for the classes and the command checks
-src/test/resources/golden/   Whole-program tests: input (.in) and exact expected output (.expected)
-pom.xml, mvnw        Maven build and its wrapper
-Makefile             Shortcuts: make, make run, make test, make clean
-docs/                Documentation, the project brief and the class diagram
-  DESIGN.md          Why the code is built the way it is
-  DEVELOPER.md       Technical guide for anyone changing the code
-  EXTENSIONS.md      Extra work beyond the course requirements
-  diagram/           Class diagram (PDF + Mermaid source)
-  milestones/        Submitted milestone files
-AGENTS.md            Short brief for AI coding assistants
+library-management-system/
+├── src/
+│   ├── main/java/                  The program
+│   └── test/
+│       ├── java/                   JUnit tests
+│       └── resources/golden/       Whole-program tests: .in = commands, .expected = exact output
+├── docs/
+│   ├── DESIGN.md                   Why the code is built the way it is
+│   ├── DEVELOPER.md                Technical guide for anyone changing the code
+│   ├── EXTENSIONS.md               Extra work beyond the course requirements
+│   ├── capstone_problem_statement.pdf   The project brief
+│   ├── diagram/                    Class diagram (PDF + Mermaid source)
+│   └── milestones/                 Submitted milestone files
+├── .github/workflows/ci.yml        Builds and tests automatically on GitHub
+├── pom.xml, mvnw, .mvn/            Maven build and its wrapper (no Maven install needed)
+├── Makefile                        Shortcuts: make, make run, make test
+├── AGENTS.md                       Short brief for AI coding assistants
+└── README.md                       You are here
 ```
+
+### How the code fits together
+
+A line you type travels like this:
+
+```text
+Main  ──►  CommandProcessor  ──►  Library  ──►  items, members and loans
+(starts)   (checks the line,      (applies every rule
+           prints the result)      and throws errors)
+```
+
+| Part | Classes | What they do |
+|---|---|---|
+| **Items** | `LibraryItem`, `Book`, `Magazine`, `ReferenceBook`, `Borrowable` | What the library holds. Books and magazines can be lent and have a fine rate. Reference books cannot. |
+| **Members** | `Member`, `Student`, `Staff`, `Faculty` | Who borrows. Each type knows its own item limit and loan length. |
+| **Loans** | `Loan`, `ReturnResult` | One lent item with its due day and fine, and the outcome of a return. |
+| **The library** | `Library` | Holds everything and enforces every rule: who can borrow what, fines, reservations. |
+| **Commands** | `Main`, `CommandProcessor` | Read each line, check it, run it and print the result. Errors are caught in one place. |
+| **Interactive mode** | `InteractiveShell` | The optional friendly mode: prompt, colours, tables and help. |
+| **Errors** | `LibraryException` and 8 kinds | One exception for each way a command can fail. |
+
+### How it is tested
+
+| Tests | What they check |
+|---|---|
+| `ItemTest`, `MemberTest`, `LoanTest` | The rules built into each type: fine rates, limits, due days, fines. |
+| `LibraryTest` | Borrow, return and reserve rules, error messages, sort orders. |
+| `CommandProcessorTest` | Every kind of bad input gives the right error. |
+| `GoldenTest` | Complete sessions, including the brief's sample, match the expected output exactly. |
+| `InteractiveShellTest` | The prompt, tables, help and colours of the interactive mode. |
+| `InputRuleTest` | All input is read with `Scanner` only. |
 
 ## Learn more
 
