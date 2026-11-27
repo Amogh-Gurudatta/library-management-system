@@ -14,20 +14,27 @@ public class CommandProcessor {
         this.library = library;
     }
 
-    /** The command loop. This is the one place where LibraryExceptions are caught. */
+    /** The command loop: reads every line, runs it and prints the result. */
     public void run(Scanner in, PrintStream out) {
         while (in.hasNextLine()) {
-            String line = in.nextLine();
-            if (line.isBlank()) {
-                continue;
+            for (String result : handle(in.nextLine())) {
+                out.println(result);
             }
-            try {
-                for (String result : execute(line)) {
-                    out.println(result);
-                }
-            } catch (LibraryException e) {
-                out.println("ERROR " + e.getMessage());
-            }
+        }
+    }
+
+    /**
+     * Runs one line and returns the lines to print: the result, or a single ERROR line.
+     * This is the one place where LibraryExceptions are caught. Blank lines produce no output.
+     */
+    public List<String> handle(String line) {
+        if (line.isBlank()) {
+            return List.of();
+        }
+        try {
+            return execute(line);
+        } catch (LibraryException e) {
+            return List.of("ERROR " + e.getMessage());
         }
     }
 

@@ -251,3 +251,15 @@ Decisions behind the table:
 - **`run_tests.sh` was removed.** `GoldenTest` does the same job inside Maven, so there is one way to run tests instead of two.
 - **The Makefile** is now a set of shortcuts around `./mvnw`: `make` (build), `make run [INPUT=file]`, `make test`, `make clean`, `make rebuild`, `make diagram` (re-exports the class diagram), `make help`.
 - **CI** runs `./mvnw -B verify`, with Maven's dependency cache turned on.
+
+## Interactive mode (user experience)
+
+- **The constraint.** The brief demands output that matches "exactly, line by line". So no friendliness may appear in the default run. Everything below only happens when the program is started with `-i` / `--interactive`; `java Main < file` is untouched, and the golden tests prove it.
+- **What it adds:** a banner, a prompt showing the current day, green `OK` and red `ERROR` lines, aligned tables with headings for SEARCH, LOANS, OVERDUE and INVENTORY, `(none)` for an empty report, and `HELP` / `EXIT` / `QUIT`.
+- **Why a separate class.** `InteractiveShell` wraps `CommandProcessor` instead of changing it, so there is no way for presentation code to break a graded result. It only *reads* the result lines and re-draws them.
+- **Why a flag, not auto-detecting a terminal.** On newer JDKs, `System.console()` is non-null even when input is piped, and the Java 21 API can't ask "is this a terminal?". An explicit `-i` is predictable: a grader or script running `java Main` can never get the shell by accident.
+- **`handle(line)` was split out of `run`.** `CommandProcessor.run` used to read, execute and print in one loop. Now `handle(line)` runs one line and returns what to print (with the single `catch` for `LibraryException`), and both `run` and the shell call it. The "caught in one place" rule still holds.
+- **`HELP` is not a real command.** Handling it in the shell means plain mode still reports `ERROR unknown command HELP`, which is what the brief implies. The help text is a constant in `InteractiveShell`.
+- **Colour** uses plain ANSI escape codes (no library) and is switched off by `NO_COLOR`.
+- `make run` now starts the interactive shell; `make run INPUT=file` still runs a file in plain mode.
+

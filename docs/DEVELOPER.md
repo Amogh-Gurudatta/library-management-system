@@ -26,8 +26,9 @@ stdin ──► CommandProcessor.run()  ──► execute(line) ──► Librar
 
 | Layer | Classes | Responsibility |
 |---|---|---|
-| Entry | `Main` | Wires `new CommandProcessor(new Library())` to `System.in` / `System.out`. No logic. |
-| Boundary | `CommandProcessor` | Splits lines on `\|`, trims, validates (`fields`, `parseDays`, `createMember`), calls `Library`, formats results. **The only `catch`.** |
+| Entry | `Main` | Parses `-i` / `-h`, then wires `Library` + `CommandProcessor` to `System.in` / `System.out`. No logic. |
+| Presentation (optional) | `InteractiveShell` | Only with `-i`. Prompt, colour, `HELP`/`EXIT`, aligned report tables. Calls `CommandProcessor.handle` for every command, so behaviour is identical. |
+| Boundary | `CommandProcessor` | Splits lines on `\|`, trims, validates (`fields`, `parseDays`, `createMember`), calls `Library`, formats results. `handle(line)` runs one line and holds **the only `catch`**; `run` loops over it. |
 | Domain service | `Library` | Owns all state (`items`, `members`, `loans`, `reservations`, `today`) and checks every business rule. No string formatting. |
 | Domain model | `LibraryItem` ← `Book`, `Magazine`, `ReferenceBook`; `Borrowable` (interface); `Member` ← `Student`, `Staff`, `Faculty`; `Loan`; `ReturnResult` | Types and per-type rules, expressed as overridden methods. |
 | Errors | `LibraryException` (abstract, checked) ← 8 subclasses | One class per failure kind, with messages built in constructors or static factories. |
@@ -87,6 +88,14 @@ stdin ──► CommandProcessor.run()  ──► execute(line) ──► Librar
 | LOANS | due day, then item ID |
 | OVERDUE | days late descending, then item ID |
 | INVENTORY | ID |
+
+## Interactive mode (`-i`)
+
+- Plain mode is the contract: `java Main < file` must print exactly the spec output. `InteractiveShell` is a separate front end, so nothing in it can change graded output. Never put presentation in `CommandProcessor` or `Library`.
+- `HELP`, `?`, `EXIT` and `QUIT` are handled by the shell only. In plain mode they are ordinary unknown commands.
+- Tables are built from the same report lines `CommandProcessor` returns, so a new report needs one entry in `InteractiveShell.REPORT_HEADERS` to get a table. Without one it still prints as plain lines.
+- Colour is on by default and off when the `NO_COLOR` environment variable is set.
+- Tested in `InteractiveShellTest` with colour off (and one test for the escape codes).
 
 ## Recipes
 

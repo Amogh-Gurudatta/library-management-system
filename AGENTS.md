@@ -9,6 +9,7 @@ Java 21 command-line library management system (college capstone). Default packa
 
 Hard rules:
 - Output must match the spec character for character (`docs/capstone_problem_statement.pdf`, plus the validation rules in `docs/DEVELOPER.md`).
+- Plain mode (no flags) must print exactly what the spec says. Presentation extras (prompt, colour, tables, help) live only in `InteractiveShell`, which runs only with `-i`, and never alter command behaviour.
 - Never use the system clock. Time is `Library.today`, advanced only by `ADVANCE`.
 - Business rules go in `Library` or the model classes. Parsing, validation and formatting go in `CommandProcessor`. Exceptions are caught only in `CommandProcessor.run`.
 - No branching on type-name strings. Use overridden methods or `instanceof Borrowable`.

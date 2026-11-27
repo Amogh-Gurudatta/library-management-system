@@ -116,10 +116,20 @@ classDiagram
     class CommandProcessor {
         -Library library
         +run(Scanner in, PrintStream out)
+        +handle(String line) List~String~
         -execute(String line) List~String~
         -fields(String[] parts, String... names)$ String[]
         -parseDays(String text)$ int
         -createMember(String id, String name, String type)$ Member
+    }
+
+    class InteractiveShell {
+        -Library library
+        -CommandProcessor processor
+        -boolean color
+        +run(Scanner in, PrintStream out)
+        -print(PrintStream out, String line, List~String~ lines)
+        -printTable(...)
     }
 
     class Main {
@@ -160,6 +170,9 @@ classDiagram
 
     %% Associations
     Main --> CommandProcessor : creates
+    Main ..> InteractiveShell : with -i
+    InteractiveShell --> CommandProcessor : handle(line)
+    InteractiveShell --> Library : reads today
     CommandProcessor --> Library : drives
     Library "1" o-- "*" LibraryItem : catalogue
     Library "1" o-- "*" Member : members
@@ -177,7 +190,7 @@ classDiagram
 
     %% Colour key:
     %% blue = item hierarchy, purple = Borrowable interface, green = member hierarchy,
-    %% amber = core logic (Main, CommandProcessor, Library, Loan),
+    %% amber = core logic (Main, CommandProcessor, Library, Loan), sky = optional interactive front end,
     %% red = rule exceptions, pink = validation exceptions, grey = bonus
     style LibraryItem fill:#dbeafe,stroke:#2563eb,color:#111
     style Book fill:#dbeafe,stroke:#2563eb,color:#111
@@ -190,6 +203,7 @@ classDiagram
     style Faculty fill:#dcfce7,stroke:#16a34a,color:#111
     style Main fill:#fef3c7,stroke:#d97706,color:#111
     style CommandProcessor fill:#fef3c7,stroke:#d97706,color:#111
+    style InteractiveShell fill:#e0f2fe,stroke:#0284c7,color:#111
     style Library fill:#fef3c7,stroke:#d97706,color:#111
     style Loan fill:#fef3c7,stroke:#d97706,color:#111
     style ReturnResult fill:#fef3c7,stroke:#d97706,color:#111

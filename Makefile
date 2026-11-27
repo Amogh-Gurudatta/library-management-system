@@ -11,11 +11,11 @@ DIAGRAM_DIR := docs/diagram
 build: ## Compile and package the jar (skips tests)
 	@$(MVN) -q -DskipTests package
 
-run: build ## Run the program: reads stdin, or `make run INPUT=src/test/resources/golden/sample.in`
+run: build ## Interactive shell, or `make run INPUT=file` to run a file of commands
 ifdef INPUT
 	@java -jar $(JAR) < $(INPUT)
 else
-	@java -jar $(JAR)
+	@java -jar $(JAR) --interactive
 endif
 
 test: ## Compile and run every unit and golden test

@@ -33,6 +33,36 @@ java -jar target/library-management-system.jar     # run (after verify or packag
 
 ---
 
+## Interactive mode
+
+Typing commands by hand? Start the friendly mode:
+
+```bash
+make run          # or: java -jar target/library-management-system.jar -i
+```
+
+```text
+Library Management System
+Type HELP for the command list, EXIT to quit.
+library (day 0)> ADD_BOOK|B1|Intro to Algorithms|Cormen
+OK
+library (day 0)> ADVANCE|20
+OK today is day 20
+library (day 20)> INVENTORY
+ITEM  TYPE  STATUS
+----  ----  ---------
+B1    BOOK  AVAILABLE
+```
+
+- A prompt that shows the current day.
+- Green `OK` and red `ERROR` lines (set `NO_COLOR=1` to turn colours off).
+- Reports as aligned tables with column headings, and `(none)` when empty.
+- `HELP` lists every command. `EXIT`, `QUIT` or Ctrl+D leave.
+
+Interactive mode only changes how things look. Every command behaves exactly the same. When the program is run without `-i`, for example `java -jar ... < commands.txt`, it prints the plain, exact output described below, which is what scripts and tests rely on.
+
+---
+
 ## A short example
 
 ```text
@@ -115,7 +145,7 @@ The program prints `ERROR` followed by a reason, then carries on with the next c
 ## What's in the project
 
 ```text
-src/main/java/       The program (one class per file)
+src/main/java/       The program (one class per file; `InteractiveShell` is the optional friendly mode)
 src/test/java/       JUnit tests for the classes and the command checks
 src/test/resources/golden/   Whole-program tests: input (.in) and exact expected output (.expected)
 pom.xml, mvnw        Maven build and its wrapper
